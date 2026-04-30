@@ -1,3 +1,30 @@
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+#[command(name = "mytodo", version = "1.0", about = "Aplikasi to-do list CLI sederhana")]
+pub struct Cli {
+    #[command(subcommand)]
+    command: Commands
+}
+
+#[derive(Subcommand)]
+pub enum Commands {
+    /// Menambah tugas baru dengan deskripsi tertentu
+    Add {
+        description: String
+    },
+    /// Menampilkan semua tugas
+    List,
+    /// Menandai tugas dengan nomor tertentu sebagai selesai
+    Done {
+        id: usize
+    },
+    /// Menghapus tugas dengan nomor tertentu
+    Remove {
+        id: usize
+    },
+}
+
 pub struct Task {
     pub desc: String,
     pub done: bool,
@@ -49,4 +76,15 @@ pub fn remove_task(tasks: &mut Vec<Task>, id: usize) {
     let index = id - 1;
     tasks.remove(index);
     println!("Tugas {} telah dihapus.", id);
+}
+
+pub fn run(cli: Cli) -> Result<(), anyhow::Error>{
+    let mut tasks: Vec<Task> = Vec::new();
+    match cli.command {
+        Commands::Add { description } => add_task(&mut tasks, description),
+        Commands::List => list_tasks(&tasks),
+        Commands::Done { id } => mark_done(&mut tasks, id),
+        Commands::Remove { id } => remove_task(&mut tasks, id),
+    }
+    Ok(())
 }
